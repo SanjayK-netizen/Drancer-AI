@@ -1,4 +1,5 @@
 @echo off
-cd /d D:\Dancer
+cd /d D:\Drancer
 call .venv\Scripts\activate.bat
-python voice_loop.py
+python voice.py
+pause

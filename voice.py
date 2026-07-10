@@ -32,8 +32,11 @@ def transcribe(audio):
 
 # Main conversation loop
 try:
-    print("Drancer is online. Say something...")
+    print("Drancer is online. Press Enter to start talking...")
     while True:
+        # Wait for user to press Enter before listening
+        input("Press Enter to talk to Drancer...")
+        
         audio = record_audio()
         user_text = transcribe(audio)
 
