@@ -1,0 +1,18 @@
+{
+  "user_name": "Friend",
+  "preferences": {},
+  "important_facts": [],
+  "last_updated": "2026-07-10 13:51:39.458379",
+  "conversation_logs": [
+    {
+      "user": "Say: Drancer online and ready.",
+      "drancer": "Hello! I'm here with you anytime. How can I assist you today?",
+      "timestamp": "2026-07-10 13:50:44.347357"
+    },
+    {
+      "user": "\ub300\uc120\uc120\ub4dd fabern",
+      "drancer": "\uc548\ub155\ud558\uc138\uc694! Drancer \u318d Sanjay\uc785\ub2c8\ub2e4. \uc815\ud655\ud788 \uc124\uba85\ud574\ubcf4\uc2dc\uc624! \ub300\uc2e0, \ucd9c\ub825\uc591\ub3c4\uac00 \uc544\uc8fc \uc791\uc740 \uc218\uc774\uc5b4\uc11c \uc9c1\uc6d0\ub4e4\uc5d0\uac8c \"\ud328\ub529\"\uc744 \ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uadf8\ub798\uc11c, \uc804\uccb4\uc801\uc73c\ub85c \ucd94\uac00\ud558\uae30 \uc704\ud574 \ub300\uc120\uc120\ub4dd faberN\uc758 \uc774",
+      "timestamp": "2026-07-10 13:51:39.458368"
+    }
+  ]
+}
