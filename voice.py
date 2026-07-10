@@ -34,3 +34,25 @@ while True:
 
     engine.say(reply)
     engine.runAndWait()
+
+try:
+    while True:
+        audio = record_audio()
+        user_text = transcribe(audio)
+
+        if not user_text:
+            continue
+
+        print(f"You: {user_text}")
+
+        reply = ask(user_text, history=conversation_history)
+        print(f"Drancer: {reply}")
+
+        conversation_history.append({"role": "user", "content": user_text})
+        conversation_history.append({"role": "assistant", "content": reply})
+
+        engine.say(reply)
+        engine.runAndWait()
+
+except KeyboardInterrupt:
+    print("\nDrancer shutting down.")
