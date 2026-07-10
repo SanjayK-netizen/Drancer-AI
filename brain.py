@@ -1,4 +1,4 @@
-import ollama
+import ollama 
 
 # ─────────────────────────────────────────
 # JARVIS - Brain Module
