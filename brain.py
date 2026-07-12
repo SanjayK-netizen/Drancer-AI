@@ -8,10 +8,27 @@ from memory import get_memory_context, get_user_name, log_conversation
 # Author: Sanjay.K
 # ─────────────────────────────────────────
 
-def get_system_prompt():
+LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "ta": "Tamil",
+    "te": "Telugu",
+}
+
+def get_system_prompt(language=None):
     """Generate system prompt with user-specific context from memory."""
     user_name = get_user_name()
     memory_context = get_memory_context()
+    language_note = ""
+    if language and language != "en" and language != "auto":
+        language_name = LANGUAGE_NAMES.get(language, language)
+        language_note = (
+            f"\n9. The user is speaking in {language_name}. Reply in that same language naturally."
+        )
+    else:
+        language_note = (
+            "\n9. If the user asks in another language, reply in that same language naturally."
+        )
     
     base_prompt = f"""You are Drancer, a personal AI assistant created by Sanjay.
 You are talking to {user_name}.
@@ -35,6 +52,7 @@ You are talking to {user_name}.
 6. Never claim to be an AI model from any company
 7. You are Drancer, created by Sanjay - that's your identity
 8. Feel free to reference past conversations if relevant
+{language_note}
 
 **Important for Voice Output:**
 - Use short, punchy sentences
@@ -75,13 +93,14 @@ def manage_history(history, max_items=MAX_HISTORY_CONTEXT):
         return history[-max_items:]
     return history
 
-def ask(prompt, history=[]):
+def ask(prompt, history=[], language=None):
     """
     Send a prompt to phi3:mini and get a response.
     
     Args:
         prompt: User's question or statement
         history: List of previous messages for context
+        language: Optional language code of the user's input
     
     Returns:
         String response from Drancer
@@ -90,9 +109,19 @@ def ask(prompt, history=[]):
     history = manage_history(history)
     
     # Get dynamic system prompt with user context
-    system_prompt = get_system_prompt()
+    system_prompt = get_system_prompt(language)
     
     messages = [{"role": "system", "content": system_prompt}]
+    
+    if language and language != "en" and language != "auto":
+        language_name = LANGUAGE_NAMES.get(language, language)
+        messages.append({
+            "role": "system",
+            "content": (
+                f"The user's input is in {language_name}. Reply in that same language "
+                "unless explicitly asked to switch to another language."
+            )
+        })
     
     # Add conversation history
     messages += history
