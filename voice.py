@@ -1,10 +1,34 @@
 ﻿import os
-import whisper
-import pyttsx3
-import sounddevice as sd
+import sys
+
+try:
+    import whisper
+except Exception as exc:
+    whisper = None
+    WHISPER_IMPORT_ERROR = exc
+else:
+    WHISPER_IMPORT_ERROR = None
+
+try:
+    import pyttsx3
+except Exception as exc:
+    pyttsx3 = None
+    TTS_IMPORT_ERROR = exc
+else:
+    TTS_IMPORT_ERROR = None
+
+try:
+    import sounddevice as sd
+except Exception as exc:
+    sd = None
+    SOUNDDEVICE_IMPORT_ERROR = exc
+else:
+    SOUNDDEVICE_IMPORT_ERROR = None
+
 from brain import ask
 
-model = whisper.load_model("base")
+WHISPER_AVAILABLE = whisper is not None and WHISPER_IMPORT_ERROR is None
+model = whisper.load_model("base") if WHISPER_AVAILABLE else None
 conversation_history = []
 
 LANGUAGE_CODE_MAP = {
@@ -58,6 +82,8 @@ def get_language_selection():
 
 def record_audio(duration=5, fs=16000):
     """Record audio from microphone."""
+    if sd is None:
+        raise RuntimeError("sounddevice is unavailable")
     print("Listening...")
     audio = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype="float32")
     sd.wait()
@@ -85,6 +111,10 @@ def select_tts_voice(engine, language_code="auto"):
 
 def speak(text, language_code="auto"):
     """Speak text out loud, choosing a voice if available."""
+    if pyttsx3 is None:
+        print("(Text-to-speech unavailable in this environment.)")
+        return
+
     engine = pyttsx3.init()
     engine.setProperty("rate", 150)
     voice = select_tts_voice(engine, language_code)
@@ -101,6 +131,10 @@ def speak(text, language_code="auto"):
 
 def transcribe(audio, language_code="auto"):
     """Transcribe audio to text using Whisper."""
+    if not WHISPER_AVAILABLE or model is None:
+        print("(Whisper is unavailable; voice transcription is disabled. Use text input instead.)")
+        return "", ""
+
     decode_language = None if language_code == "auto" else language_code
     result = model.transcribe(audio, fp16=False, language=decode_language)
     text = result["text"].strip()
@@ -109,15 +143,33 @@ def transcribe(audio, language_code="auto"):
 
 
 def main():
+    if not WHISPER_AVAILABLE:
+        print("Whisper could not be loaded:")
+        print(f"  {WHISPER_IMPORT_ERROR}")
+        print("Drancer will start in text-only mode. Type a message to continue.")
+
     selected_language = get_language_selection()
     print(f"Speech recognition language: {language_name(selected_language)}")
-    if selected_language == "auto":
+    if selected_language == "auto" and WHISPER_AVAILABLE:
         print("Whisper will attempt automatic language detection.")
 
     try:
         print("Drancer is online. Press Enter to start talking...")
         while True:
-            input("Press Enter to talk to Drancer...")
+            user_input = input("Press Enter to talk to Drancer..." if WHISPER_AVAILABLE else "Enter a message for Drancer: ")
+            if not WHISPER_AVAILABLE:
+                user_text = user_input.strip()
+                if not user_text:
+                    continue
+                effective_language = selected_language
+                lang_label = language_name(effective_language)
+                print(f"You ({lang_label}): {user_text}")
+                reply = ask(user_text, history=conversation_history, language=effective_language)
+                print(f"Drancer ({lang_label}): {reply}")
+                conversation_history.append({"role": "user", "content": user_text})
+                conversation_history.append({"role": "assistant", "content": reply})
+                speak(reply, language_code=effective_language)
+                continue
 
             audio = record_audio()
             user_text, detected_lang = transcribe(audio, selected_language)
