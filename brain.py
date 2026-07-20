@@ -93,7 +93,7 @@ def manage_history(history, max_items=MAX_HISTORY_CONTEXT):
         return history[-max_items:]
     return history
 
-def ask(prompt, history=[], language=None):
+def ask(prompt, history=None, language=None):
     """
     Send a prompt to phi3:mini and get a response.
     
@@ -105,6 +105,10 @@ def ask(prompt, history=[], language=None):
     Returns:
         String response from Drancer
     """
+    # Ensure default history does not persist across calls
+    if history is None:
+        history = []
+
     # Manage conversation history to avoid context overflow
     history = manage_history(history)
     
