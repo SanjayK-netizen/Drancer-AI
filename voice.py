@@ -115,24 +115,39 @@ def speak(text, language_code="auto"):
         print("(Text-to-speech unavailable in this environment.)")
         return
 
-    engine = pyttsx3.init()
-    engine.setProperty("rate", 150)
-    voice = select_tts_voice(engine, language_code)
-    if voice:
-        engine.setProperty("voice", voice.id)
-    elif language_code != "auto":
-        print(
-            f"(No matching TTS voice found for {language_name(language_code)}; using default voice.)"
-        )
-    engine.say(text)
-    engine.runAndWait()
-    engine.stop()
+    try:
+        engine = pyttsx3.init()
+    except Exception as exc:
+        print(f"(Text-to-speech engine failed to start: {exc})")
+        return
+
+    try:
+        engine.setProperty("rate", 150)
+        voice = select_tts_voice(engine, language_code)
+        if voice:
+            engine.setProperty("voice", voice.id)
+        elif language_code != "auto":
+            print(
+                f"(No matching TTS voice found for {language_name(language_code)}; using default voice.)"
+            )
+        engine.say(text)
+        engine.runAndWait()
+    except Exception as exc:
+        print(f"(Text-to-speech playback failed: {exc})")
+    finally:
+        try:
+            engine.stop()
+        except Exception:
+            pass
 
 
 def transcribe(audio, language_code="auto"):
     """Transcribe audio to text using Whisper."""
     if not WHISPER_AVAILABLE or model is None:
         print("(Whisper is unavailable; voice transcription is disabled. Use text input instead.)")
+        return "", ""
+
+    if audio is None:
         return "", ""
 
     decode_language = None if language_code == "auto" else language_code
